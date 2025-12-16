@@ -1,0 +1,86 @@
+DateTable =
+ADDCOLUMNS (
+    CALENDAR ( MIN ( SocialMediaData[Date] ), MAX ( SocialMediaData[Date] ) ),
+    "Year", YEAR ( [Date] ),
+    "Month Number", MONTH ( [Date] ),
+    "Month Name", FORMAT ( [Date], "MMM" ),
+    "Year-Month", FORMAT ( [Date], "YYYY-MMM" ),
+    "Quarter", "Q" & FORMAT ( [Date], "Q" )
+)
+
+
+-- BASIC AGGREGATES
+Total Impressions :=
+SUM ( SocialMediaData[Impressions] )
+
+Total Reach :=
+SUM ( SocialMediaData[Reach] )  -- If you have a Reach column; else delete this measure
+
+Total Clicks :=
+SUM ( SocialMediaData[Clicks] )
+
+Total Spend :=
+SUM ( SocialMediaData[Spend] )
+
+Total Conversions :=
+SUM ( SocialMediaData[Conversions] )
+
+Total Revenue :=
+SUM ( SocialMediaData[Revenue] )   -- If you don't have Revenue, keep = 0 or remove this measure
+
+
+-- CTR, CPC, CPA, CONVERSION RATE, ROAS
+CTR % :=
+DIVIDE ( [Total Clicks], [Total Impressions] )
+
+CPC :=
+DIVIDE ( [Total Spend], [Total Clicks] )
+
+Conversion Rate % :=
+DIVIDE ( [Total Conversions], [Total Clicks] )
+
+CPA (Cost per Conversion) :=
+DIVIDE ( [Total Spend], [Total Conversions] )
+
+ROAS :=
+DIVIDE ( [Total Revenue], [Total Spend] )
+
+
+-- ENGAGEMENT (IF YOU HAVE ENGAGEMENT COLUMN)
+Total Engagements :=
+SUM ( SocialMediaData[Engagements] )   -- likes + shares + comments
+
+Engagement Rate % :=
+DIVIDE ( [Total Engagements], [Total Impressions] )
+
+
+
+-- AVERAGE CTR BY CONTEXT (Platform/Campaign)
+Avg CTR % :=
+AVERAGEX (
+    VALUES ( SocialMediaData[Campaign] ),
+    [CTR %]
+)
+
+Avg CPC :=
+AVERAGEX (
+    VALUES ( SocialMediaData[Campaign] ),
+    [CPC]
+)
+
+Avg CPA :=
+AVERAGEX (
+    VALUES ( SocialMediaData[Campaign] ),
+    [CPA (Cost per Conversion)]
+)
+Performance Bucket :=
+VAR ThisCTR =
+    CALCULATE ( [CTR %], ALLEXCEPT ( SocialMediaData, SocialMediaData[Campaign] ) )
+RETURN
+SWITCH (
+    TRUE (),
+    ThisCTR >= 0.05, "High CTR",
+    ThisCTR >= 0.02, "Medium CTR",
+    TRUE,            "Low CTR"
+)
+
